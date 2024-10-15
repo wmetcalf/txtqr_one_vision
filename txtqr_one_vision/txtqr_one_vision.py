@@ -14,11 +14,10 @@ import logging
 import uuid
 logger = logging.getLogger(__name__)
 
-
 try:
     import extract_msg
 except ImportError:
-    logger.debug("The 'extract_msg' library is required for handling .msg files. Install it using 'pip install extract-msg'")
+    logger.error("The 'extract_msg' library is required for handling .msg files. Install it using 'pip install extract-msg'")
     sys.exit(1)
 
 try:
@@ -31,7 +30,7 @@ try:
 
     HAVE_MAGIKA = True
 except ImportError:
-    logger.debug(
+    logger.warning(
         "The 'magika' library won't be used for file type detection. Install it using 'pip install magika' does better at detecting eml's than libmagic"
     )
     HAVE_MAGIKA = False
@@ -401,8 +400,12 @@ def main():
         help="Set the logging level. Default is DEBUG.",
     )
     args = parser.parse_args()
-
-    logging.basicConfig(level=getattr(logging, args.log_level.upper()))
+    numeric_level = getattr(logging,  args.log_level.upper(), None)
+    if not isinstance(numeric_level, int):
+        logger.error(f'Invalid log level {args.log_level}')
+        sys.exit(1)
+    logging.basicConfig(level=numeric_level)
+    #logging.basicConfig(level=getattr(logging, args.log_level.upper()))
 
     input_path = args.input
 

@@ -13,7 +13,8 @@ setup(
         'magika',
         "msg_parser",
         "beautifulsoup4",
-        "zxing-cpp"
+        "zxing-cpp",
+        "extract_msg",
     ],
     extras_require={
         'decoders': [
