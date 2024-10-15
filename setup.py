@@ -13,11 +13,11 @@ setup(
         'magika',
         "msg_parser",
         "beautifulsoup4",
+        "zxing-cpp"
     ],
     extras_require={
         'decoders': [
             'bft_qr_reader @ https://github.com/wmetcalf/bft_qr_reader.git',
-            'zxing-cpp'
             ]
     },    
     include_package_data=True,
@@ -29,7 +29,7 @@ setup(
     author='Will Metcalf',
     author_email='william.metcalf@gmail.com',
     description='txt/html/e-mail qr code to png',
-    url='https://github.com/wmetcalf/bft_qr_reader',
+    url='https://github.com/wmetcalf/txtqr_one_vision',
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
