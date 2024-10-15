@@ -1,0 +1,8 @@
+opencv-python
+opencv-contrib-python
+python-magic
+pillow
+python-multipart
+magika
+msg_parser
+beautifulsoup4
