@@ -13,7 +13,7 @@ setup(
     ],
     extras_require={
         'decoders': [
-            'bft_qr_reader @ https://github.com/wmetcalf/bft_qr_reader.git',
+            'bft_qr_reader @ git+https://github.com/wmetcalf/bft_qr_reader.git',
             'zxing-cpp',
             ],
         'email':[
