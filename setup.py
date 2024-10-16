@@ -6,19 +6,21 @@ setup(
     packages=find_packages(),
     install_requires=[
         'opencv-python',
-        'opencv-contrib-python',
         'python-magic',
         'pillow',
         'python-multipart',
-        'magika',
-        "msg_parser",
         "beautifulsoup4",
-        "zxing-cpp",
-        "extract_msg",
     ],
     extras_require={
         'decoders': [
             'bft_qr_reader @ https://github.com/wmetcalf/bft_qr_reader.git',
+            'zxing-cpp',
+            ],
+        'email':[
+            'extract_msg',
+            ],
+        'magika':[
+            'magika'
             ]
     },    
     include_package_data=True,
@@ -38,4 +40,3 @@ setup(
     ],
     python_requires='>=3.6',
 )
-
