@@ -12,14 +12,16 @@ import traceback
 from pathlib import Path
 import logging
 import uuid
+
 logger = logging.getLogger(__name__)
 
 try:
     import extract_msg
-except ImportError:
-    logger.error("The 'extract_msg' library is required for handling .msg files. Install it using 'pip install extract-msg'")
-    sys.exit(1)
 
+    HAVE_EXTRACT_MSG = True
+except ImportError:
+    logger.warning("The 'extract_msg' library is required for handling .msg files. Install it using 'pip install extract-msg'")
+    HAVE_EXTRACT_MSG = False
 try:
     import re2 as re
 except ImportError:
@@ -49,11 +51,13 @@ class QRCodeTXTExtractor:
         if self.decoder == "bft_qr_reader":
             try:
                 from bft_qr_reader.bft_qr_reader import BFTQRCodeReader
+
                 self.bft_qr_decoder = BFTQRCodeReader(wechat_model_dir=model_dir)
                 self.decode_qr = True
             except ImportError:
-                logger.debug("The 'bft_qr_reader' library is required for QR code detection. Install it using 'sudo apt-get install -y libzbar0 inkscape librsvg2-bin && pip3 install git+https://github.com/wmetcalf/bft_qr_reader.git'")
-                sys.exit(1)
+                logger.debug(
+                    "The 'bft_qr_reader' library is required for QR code detection. Install it using 'sudo apt-get install -y libzbar0 inkscape librsvg2-bin && pip3 install git+https://github.com/wmetcalf/bft_qr_reader.git'"
+                )
         elif self.decoder == "zxing":
             try:
                 import zxingcpp
@@ -64,10 +68,12 @@ class QRCodeTXTExtractor:
                 logger.debug(
                     "The 'zxing-cpp' library is required for QR code detection using zxing-cpp. Install it using 'pip install zxing-cpp'"
                 )
-                sys.exit(1)
         else:
             logger.debug(f"Unsupported decoder or none specified won't do qr_decodes: {self.decoder}")
             self.decode_qr = False
+
+        if not self.decode_qr:
+            logger.debug("We won't be doing qr decodes only image generation")
 
         self.char_to_modules = {
             "█": [[1, 1], [1, 1]],
@@ -333,7 +339,12 @@ class QRCodeTXTExtractor:
                 if mime_type == "message/rfc822" or file_path.lower().endswith(".eml"):
                     ascii_qrcode = self.read_eml_file(file_path)
                 elif mime_type == "application/vnd.ms-outlook" or file_path.lower().endswith(".msg"):
-                    ascii_qrcode = self.read_msg_file(file_path)
+                    if HAVE_EXTRACT_MSG:
+                        ascii_qrcode = self.read_msg_file(file_path)
+                    else:
+                        result["errors"].append("msg file found but extract_msg not installed")
+                        self.results.append(result)
+                        return
             elif mime_type == "text/html":
                 with open(file_path, "r", encoding="utf-8") as f:
                     html_content = f.read()
@@ -400,12 +411,12 @@ def main():
         help="Set the logging level. Default is DEBUG.",
     )
     args = parser.parse_args()
-    numeric_level = getattr(logging,  args.log_level.upper(), None)
+    numeric_level = getattr(logging, args.log_level.upper(), None)
     if not isinstance(numeric_level, int):
-        logger.error(f'Invalid log level {args.log_level}')
+        logger.error(f"Invalid log level {args.log_level}")
         sys.exit(1)
     logging.basicConfig(level=numeric_level)
-    #logging.basicConfig(level=getattr(logging, args.log_level.upper()))
+    # logging.basicConfig(level=getattr(logging, args.log_level.upper()))
 
     input_path = args.input
 
@@ -420,7 +431,7 @@ def main():
         return
 
     for file_path in files:
-        extractor.seek_and_destroy(file_path,False)
+        extractor.seek_and_destroy(file_path, False)
 
     extractor.save_results(args.output)
 
