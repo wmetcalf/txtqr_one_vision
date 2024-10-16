@@ -1,10 +1,16 @@
 # txtqr_one_vision
 Tries to perform QR extraction from txt/html and msg/eml bodies
 
-#Install
+#Install base package
 ```
 pip3 install git+https://github.com/wmetcalf/txtqr_one_vision.git
 ```
+
+#Install base and optional dependencies 
+```
+pip3 install git+https://github.com/wmetcalf/txtqr_one_vision.git#egg=txtqr_one_vision[decoders,email,magika]
+```
+
 
 #Usage
 ```
