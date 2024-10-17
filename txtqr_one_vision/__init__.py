@@ -1,0 +1,1 @@
+from .txtqr_one_vision import QRCodeTXTExtractor

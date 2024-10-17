@@ -320,17 +320,17 @@ class QRCodeTXTExtractor:
                     result["file"] = file_path
                     result["errors"].append(f"File not found: {file_path}")
                     self.results.append(result)
-                    return
+                    return result
             else:
                 result["errors"].append("Invalid file input type. Must be either a file path or bytes.")
                 self.results.append(result)
-                return
+                return result
             mime_type = self.get_file_mime_type(file_path)
             result["mime_type"] = mime_type
             if mime_type is None:
                 result["errors"].append("Could not determine the file type.")
                 self.results.append(result)
-                return
+                return result
             if (
                 mime_type in ["message/rfc822", "application/vnd.ms-outlook"]
                 or file_path.lower().endswith(".eml")
@@ -354,18 +354,18 @@ class QRCodeTXTExtractor:
             else:
                 result["errors"].append(f"Unsupported MIME type: {mime_type}")
                 self.results.append(result)
-                return
+                return result
 
             if not ascii_qrcode:
                 result["errors"].append("No ASCII QR code found in the content.")
                 self.results.append(result)
-                return
+                return result
 
             qrcode_blocks = self.detect_ascii_qrcode(ascii_qrcode, min_lines=15)
             if not qrcode_blocks:
                 result["errors"].append("No QR code detected in the extracted text.")
                 self.results.append(result)
-                return
+                return result
 
             for idx, qrcode_lines in enumerate(qrcode_blocks):
                 output_file = os.path.join(self.output_dir, f"{str(uuid.uuid4())}.png")
@@ -383,8 +383,8 @@ class QRCodeTXTExtractor:
                     result["errors"].append(f"Failed to render QR code for block {idx+1}.")
         except Exception as e:
             result["errors"].append(f"Exception occurred: {str(e)}")
-
         self.results.append(result)
+        return result
 
     def save_results(self, output_path):
         with open(os.path.join(self.output_dir, "results.json"), "w", encoding="utf-8") as json_file:
