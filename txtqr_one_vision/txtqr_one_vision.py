@@ -299,15 +299,27 @@ class QRCodeTXTExtractor:
                 return mime_type
         return mime_type
 
-    def seek_and_destroy(self, file_input, reset_results=False):
+    def seek_and_destroy(self, file_input, reset_results=False, output_dir=None):
         """https://www.youtube.com/watch?v=FLTchCiC0T0"""
         file_path = None
+        temp_file_path = None
         if reset_results:
             self.results = []
         result = {"file": file_path, "mime_type": None, "qrcode_images": [], "decoding_results": [], "errors": []}
         try:
+            if output_dir is None:
+                output_dir = self.output_dir
+            if not os.path.exists(output_dir):
+                try:
+                    os.makedirs(output_dir, exist_ok=True)
+                except Exception as e:
+                    logger.debug(f"Error creating output directory: {e}")
+                    result["errors"].append(f"Error creating output directory: {e}")
+                    self.results.append(result)
+                    return result
+
             if isinstance(file_input, bytes):
-                with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                with tempfile.NamedTemporaryFile(delete=False, dir=output_dir) as temp_file:
                     temp_file.write(file_input)
                     temp_file_path = temp_file.name
                     result["file"] = temp_file_path
@@ -368,7 +380,7 @@ class QRCodeTXTExtractor:
                 return result
 
             for idx, qrcode_lines in enumerate(qrcode_blocks):
-                output_file = os.path.join(self.output_dir, f"{str(uuid.uuid4())}.png")
+                output_file = os.path.join(output_dir, f"{str(uuid.uuid4())}.png")
                 success = self.render_qrcode(qrcode_lines, output_file)
                 if success:
                     result["qrcode_images"].append(output_file)
@@ -383,6 +395,9 @@ class QRCodeTXTExtractor:
                     result["errors"].append(f"Failed to render QR code for block {idx+1}.")
         except Exception as e:
             result["errors"].append(f"Exception occurred: {str(e)}")
+        finally:
+            if temp_file_path and os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
         self.results.append(result)
         return result
 
