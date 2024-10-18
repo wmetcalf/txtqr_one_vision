@@ -101,6 +101,16 @@ class QRCodeTXTExtractor:
             "▁": [[1, 1], [1, 1]],
         }
 
+    def ascii_cleanup(self, text):
+        if re.search(r'\x1B',text):
+            try:
+                eat_it = re.compile(r'(?:\x1B[@-_][0-?]*[ -/]*[@-~])')
+                new_text = eat_it.sub('', text)
+                return(new_text)
+            except:
+                pass
+        return text
+
     def decode_qr_codes(self, image_path):
         if self.decoder == "bft_qr_reader":
             return self.decode_with_bft(image_path)
@@ -209,9 +219,9 @@ class QRCodeTXTExtractor:
         return ascii_qrcode.rstrip()
 
     def detect_ascii_qrcode(self, text, min_lines=15, blank_line_reset=4):
+        text = self.ascii_cleanup(text)
         pattern = re.compile(r"^[{} \s]+$".format("".join(re.escape(ch) for ch in self.char_to_modules.keys())))
         non_space_pattern = re.compile(r"[{}]+".format("".join(re.escape(ch) for ch in self.char_to_modules.keys())))
-
         lines = text.split("\n")
         qrcode_blocks = []
         current_block = []
