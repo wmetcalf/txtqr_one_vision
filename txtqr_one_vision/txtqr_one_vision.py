@@ -208,7 +208,7 @@ class QRCodeTXTExtractor:
         ascii_qrcode += text + "\n"
         return ascii_qrcode.rstrip()
 
-    def detect_ascii_qrcode(self, text, min_lines=15):
+    def detect_ascii_qrcode(self, text, min_lines=15, blank_line_reset=4):
         pattern = re.compile(r"^[{} \s]+$".format("".join(re.escape(ch) for ch in self.char_to_modules.keys())))
         non_space_pattern = re.compile(r"[{}]+".format("".join(re.escape(ch) for ch in self.char_to_modules.keys())))
 
@@ -216,20 +216,27 @@ class QRCodeTXTExtractor:
         qrcode_blocks = []
         current_block = []
         is_qrcode = False
+        blank_line_count = 0  # To track how many blank lines we have seen
 
         for line in lines:
             stripped_line = line.rstrip()
+
             if not stripped_line.strip():
-                continue
-            if pattern.match(stripped_line) and non_space_pattern.search(stripped_line):
-                current_block.append(stripped_line)
-                is_qrcode = True
-            else:
-                if is_qrcode:
+                blank_line_count += 1
+                if blank_line_count >= blank_line_reset and is_qrcode:
                     if len(current_block) >= min_lines:
                         qrcode_blocks.append(current_block)
                     current_block = []
                     is_qrcode = False
+                continue
+
+            if pattern.match(stripped_line) and non_space_pattern.search(stripped_line):
+                current_block.append(stripped_line)
+                is_qrcode = True
+                blank_line_count = 0
+            else:
+
+                blank_line_count = 0
 
         if is_qrcode and len(current_block) >= min_lines:
             qrcode_blocks.append(current_block)
